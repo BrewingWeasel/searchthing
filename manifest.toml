@@ -10,6 +10,7 @@ packages = [
   { name = "gleeunit", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "72CDC3D3F719478F26C4E2C5FED3E657AC81EC14A47D2D2DEBB8693CA3220C3B" },
   { name = "htmerl", version = "0.1.0", build_tools = ["rebar3"], requirements = [], otp_app = "htmerl", source = "hex", outer_checksum = "D932F76EA33C318A79F41A429FDBEAE30820390DDB72BA89F38EEF32FEC36395" },
   { name = "htmgrrrl", version = "0.3.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "htmerl"], otp_app = "htmgrrrl", source = "hex", outer_checksum = "983492567967DAA64776E005B9E70353368B14E6F87D543E01308B48A7A0398F" },
+  { name = "robots", version = "1.1.2", build_tools = ["rebar3"], requirements = [], otp_app = "robots", source = "hex", outer_checksum = "B3AB049FA660F9F372C7A402200337066B5C22F8D19EB0305F6FEF038B006BAF" },
 ]
 
 [requirements]
@@ -19,4 +20,5 @@ gleam_httpc = { version = ">= 2.2.0 and < 3.0.0" }
 gleam_otp = { version = ">= 0.10.0 and < 1.0.0" }
 gleam_stdlib = { version = ">= 0.34.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
-htmgrrrl = { version = ">= 0.3.0 and < 1.0.0"}
+htmgrrrl = { version = ">= 0.3.0 and < 1.0.0" }
+robots = { version = ">= 1.1.2 and < 2.0.0"}

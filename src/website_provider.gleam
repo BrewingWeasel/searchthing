@@ -1,6 +1,8 @@
 import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/erlang/process.{type Subject}
+import gleam/http/request
+import gleam/httpc
 import gleam/io
 import gleam/list
 import gleam/option
@@ -27,7 +29,7 @@ type State {
   State(
     url_queue: Dict(Url, List(Url)),
     visited_urls: Set(Url),
-    robots_rules: Dict(Url, String),
+    robots_rules: Dict(Url, Rules),
     next_url: List(Url),
   )
 }
@@ -95,9 +97,13 @@ fn handle_message(message: Message, state: State) -> actor.Next(Message, State) 
         Error(Nil) -> actor.continue(state)
         Ok(root_url) -> {
           use <- bool.lazy_guard(
-            when: bool.negate(string.ends_with(root_url, ".lt/")),
+            when: !string.ends_with(root_url, ".lt/"),
             return: fn() { actor.continue(state) },
           )
+          let #(can_view, state) = handle_robots_txt(state, root_url, url)
+          use <- bool.lazy_guard(when: !can_view, return: fn() {
+            actor.continue(state)
+          })
           actor.continue(
             State(
               ..state,
@@ -142,3 +148,31 @@ fn get_url_from_domain(
       |> result.lazy_unwrap(fn() { get_url_from_domain(next_domains, state) })
   }
 }
+
+fn handle_robots_txt(state: State, root_url, url) {
+  case dict.get(state.robots_rules, root_url) {
+    Ok(r) -> #(is_allowed("lolbot", r, url), state)
+    Error(Nil) -> {
+      let assert Ok(req) = request.to(root_url <> "robots.txt")
+      let response =
+        httpc.send(req)
+        |> result.map(fn(r) { r.body })
+      let assert Ok(conts) = parse_robots(result.unwrap(response, ""))
+      #(
+        is_allowed("lolbot", conts, url),
+        State(
+          ..state,
+          robots_rules: dict.insert(state.robots_rules, root_url, conts),
+        ),
+      )
+    }
+  }
+}
+
+type Rules
+
+@external(erlang, "robots", "parse")
+fn parse_robots(contents: String) -> Result(Rules, Nil)
+
+@external(erlang, "robots", "parse")
+fn is_allowed(agent: String, robot_rules: Rules, url: Url) -> Bool
